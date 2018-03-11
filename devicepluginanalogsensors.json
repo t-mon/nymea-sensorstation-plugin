@@ -1,0 +1,39 @@
+{
+    "name": "AnalogSensors",
+    "displayName": "Analog Sensors",
+    "id": "7e3aa6ac-dfd5-4a59-8d26-d606cecb0012",
+    "vendors": [
+        {
+            "name": "guh",
+            "displayName": "guh GmbH",
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "deviceClasses": [
+                {
+                    "name": "airQualitySensors",
+                    "displayName": "Air quality sensor",
+                    "id": "2369e4a9-9320-444a-a6a3-3a2bbce38ddd",
+                    "deviceIcon": "None",
+                    "setupMethod": "justAdd",
+                    "createMethods": ["user"],
+                    "interfaces": [ ],
+                    "basicTags": [ ],
+                    "paramTypes": [
+
+                    ],
+                    "stateTypes":[
+
+                    ],
+                    "actionTypes":[
+
+                    ],
+                    "eventTypes":[
+
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+
+
