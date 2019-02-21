@@ -13,15 +13,66 @@
                     "displayName": "Air quality sensor",
                     "id": "2369e4a9-9320-444a-a6a3-3a2bbce38ddd",
                     "deviceIcon": "None",
-                    "setupMethod": "justAdd",
                     "createMethods": ["user"],
-                    "interfaces": [ ],
+                    "interfaces": [ "connectable", "pressuresensor", "temperaturesensor", "humiditysensor", "lightsensor", "co2sensor" ],
                     "basicTags": [ ],
-                    "paramTypes": [
-
-                    ],
-                    "stateTypes":[
-
+                    "paramTypes": [ ],
+                    "stateTypes": [
+                        {
+                            "id": "00069d99-99e0-4bd4-9435-138ca8cb4fa6",
+                            "name": "connected",
+                            "displayName": "available",
+                            "displayNameEvent": "available changed",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "5fce7e33-5402-422a-8277-cb43ce491ce5",
+                            "name": "pressure",
+                            "displayName": "pressure",
+                            "displayNameEvent": "pressure changed",
+                            "type": "double",
+                            "unit": "MilliBar",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "fca3f10b-e6ab-4c11-8c7a-fdfe92d00b8f",
+                            "name": "temperature",
+                            "displayName": "temperature",
+                            "displayNameEvent": "temperature changed",
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "b0cd0e7a-a015-49fb-a8a4-0674be28ae93",
+                            "name": "humidity",
+                            "displayName": "humidity",
+                            "displayNameEvent": "humidity changed",
+                            "type": "double",
+                            "unit": "Percentage",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "309b49d9-e79b-4b8b-ad14-3c29fdba73ee",
+                            "name": "lightIntensity",
+                            "displayName": "light intensity",
+                            "displayNameEvent": "light intensity changed",
+                            "type": "double",
+                            "unit": "Lux",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "c8403b02-6e3c-4881-b0e5-2fbc86ca6990",
+                            "name": "co2",
+                            "displayName": "air quality",
+                            "displayNameEvent": "air quality changed",
+                            "type": "double",
+                            "unit": "PartsPerMillion",
+                            "defaultValue": 0
+                        }
                     ],
                     "actionTypes":[
 

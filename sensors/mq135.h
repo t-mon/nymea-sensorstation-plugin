@@ -20,40 +20,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef MQ135_H
+#define MQ135_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QObject>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+#include "sensordatafilter.h"
+
+// Reference: https://github.com/GeorgK/MQ135
+
+class MQ135 : public QObject
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    explicit MQ135(QObject *parent = nullptr);
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    void setAdcValue(int adcValue);
+    void setTemperature(double temperature);
+    void setHumidity(double humidity);
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    double calculatePpmValue();
+    double getCalibrationRestistance();
 
 private:
-    PluginTimer *m_timer = nullptr;
+    SensorDataFilter *m_filter = nullptr;
 
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
+    int m_adcValue = 0;
+    double m_temperature = 22.0;
+    double m_humidity = 50.0;
 
-private slots:
-    void onPluginTimer();
+    double getCorrectionFactor();
+    double getResistance();
+    double getCorrectedResistance();
+    double getCorrectedPPM();
+    double getRZero();
+    double getCorrectedRZero();
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // MQ135_H

@@ -20,40 +20,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef I2CPORT_P_H
+#define I2CPORT_P_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QFile>
+#include <QObject>
+#include <QString>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+#include "i2cport.h"
+
+class I2CPortPrivate : public QObject
 {
     Q_OBJECT
+public:
+    explicit I2CPortPrivate(I2CPort *q);
+    I2CPort *q_ptr;
 
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
+    QList<int> scanRegirsters();
+
+    bool isOpen() const;
+    bool isValid() const;
+
+public slots:
+    bool openPort(int address);
+    void closePort();
 
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    QFile fileDescriptor;
+    int deviceDescriptor = -1;
+    int address;
+    bool valid = false;
+    QString portName;
+    QString portDeviceName;
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
-
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
-
-private:
-    PluginTimer *m_timer = nullptr;
-
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
-
-private slots:
-    void onPluginTimer();
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // I2CPORT_P_H

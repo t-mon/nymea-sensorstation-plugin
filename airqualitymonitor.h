@@ -20,40 +20,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef AIRQUALITYMONITOR_H
+#define AIRQUALITYMONITOR_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QFile>
+#include <QObject>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+#include "plugin/device.h"
+#include "sensors/mq135.h"
+#include "sensors/ads1115.h"
+#include "sensors/sht30.h"
+#include "sensors/bmp180.h"
+#include "sensors/tsl2561.h"
+
+#include "sensordatafilter.h"
+
+class AirQualityMonitor : public QObject
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    explicit AirQualityMonitor(Device *device, QObject *parent = nullptr);
+    ~AirQualityMonitor();
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
-
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    Device *device() const;
 
 private:
-    PluginTimer *m_timer = nullptr;
+    Device *m_device = nullptr;
+    ADS1115 *m_adc = nullptr;
 
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
+    MQ135 *m_airQualitySensor = nullptr;
+    SensorDataFilter *m_airQualityFilter = nullptr;
 
-private slots:
-    void onPluginTimer();
+    SHT30 *m_temperatureHumiditySensor = nullptr;
+    SensorDataFilter *m_temperatureFilter = nullptr;
+    SensorDataFilter *m_humidityFilter = nullptr;
+
+    BMP180 *m_pressureSensor = nullptr;
+    SensorDataFilter *m_pressureFilter = nullptr;
+
+    TSL2561 *m_lightSensor = nullptr;
+    SensorDataFilter *m_lightFilter = nullptr;
+
+    QFile *m_logfile = nullptr;
+
+    double roundValue(double value);
+
+public slots:
+    void enable();
+    void disable();
+    void measure();
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // AIRQUALITYMONITOR_H

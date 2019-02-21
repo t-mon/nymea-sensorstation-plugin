@@ -20,40 +20,44 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef SHT30_H
+#define SHT30_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QMutex>
+#include <QObject>
+#include <QThread>
+#include <QMutexLocker>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+class SHT30 : public QThread
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    explicit SHT30(const QString &i2cPortName = "i2c-1", int i2cAddress = 0x44, QObject *parent = nullptr);
+    ~SHT30() override;
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    double currentTemperatureValue();
+    double currentHumidityValue();
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+protected:
+    void run() override;
 
 private:
-    PluginTimer *m_timer = nullptr;
+    QString m_i2cPortName;
+    int m_i2cAddress;
+    bool m_available = false;
 
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
+    // Thread stuff
+    QMutex m_stopMutex;
+    bool m_stop = false;
 
-private slots:
-    void onPluginTimer();
+    QMutex m_valueMutex;
+    double m_temperature;
+    double m_humidity;
+
+public slots:
+    bool enable();
+    void disable();
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // SHT30_H

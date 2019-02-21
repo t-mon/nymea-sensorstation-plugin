@@ -20,40 +20,55 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef ADS1115_H
+#define ADS1115_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QMutex>
+#include <QObject>
+#include <QThread>
+#include <QMutexLocker>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+class ADS1115 : public QThread
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    enum Channel {
+        Channel1 = 0x00,
+        Channel2 = 0x01,
+        Channel3 = 0x02,
+        Channel4 = 0x03
+    };
+    Q_ENUM(Channel)
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    explicit ADS1115(const QString &i2cPortName, int i2cAddress = 0x48, QObject *parent = nullptr);
+    ~ADS1115() override;
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    double getChannelVoltage(Channel channel);
+    int getChannelValue(Channel channel);
+
+protected:
+    void run() override;
 
 private:
-    PluginTimer *m_timer = nullptr;
+    QString m_i2cPortName;
+    int m_i2cAddress;
 
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
+    // Thread stuff
+    QMutex m_stopMutex;
+    bool m_stop = false;
 
-private slots:
-    void onPluginTimer();
+    QMutex m_valueMutex;
+    int m_channel1Value = 0;
+    int m_channel2Value = 0;
+    int m_channel3Value = 0;
+    int m_channel4Value = 0;
+
+    int readInputValue(int fd, Channel channel);
+
+public slots:
+    bool enable();
+    void disable();
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // ADS1115_H

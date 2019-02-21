@@ -20,40 +20,62 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef SENSORDATAFILTER_H
+#define SENSORDATAFILTER_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QObject>
+#include <QVector>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+class SensorDataFilter : public QObject
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    enum Type {
+        TypeLowPass,
+        TypeHighPass,
+        TypeAverage
+    };
+    Q_ENUM(Type)
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    explicit SensorDataFilter(Type filterType, QObject *parent = nullptr);
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    double filterValue(double value);
+
+    bool isReady() const;
+    void reset();
+
+    Type filterType() const;
+
+    QVector<double> inputData() const;
+    QVector<double> outputData() const;
+
+    // Filter configuration
+    uint windowSize() const;
+    void setFilterWindowSize(uint windowSize = 20);
+
+    double lowPassAlpha() const;
+    void setLowPassAlpha(double alpha = 0.2);
+
+    double highPassAlpha() const;
+    void setHighPassAlpha(double alpha = 0.2);
 
 private:
-    PluginTimer *m_timer = nullptr;
+    Type m_filterType = TypeLowPass;
+    uint m_filterWindowSize = 20;
+    double m_lowPassAlpha = 0.2;
+    double m_highPassAlpha = 0.2;
 
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
+    double m_averageSum = 0;
 
-private slots:
-    void onPluginTimer();
+    QVector<double> m_inputData;
+    QVector<double> m_outputData;
 
+    void addInputValue(double value);
+
+    // Filter methods
+    double lowPassFilterValue(double value);
+    double highPassFilterValue(double value);
+    double averageFilterValue(double value);
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // SENSORDATAFILTER_H

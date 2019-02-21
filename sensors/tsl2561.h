@@ -20,40 +20,49 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef TSL2561_H
+#define TSL2561_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QMutex>
+#include <QObject>
+#include <QThread>
+#include <QMutexLocker>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+// Reference: https://github.com/ControlEverythingCommunity/TSL2561
+
+class TSL2561 : public QThread
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    explicit TSL2561(const QString &i2cPortName = "i2c-1", int i2cAddress = 0x39, QObject *parent = nullptr);
+    ~TSL2561() override;
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    double currentLux();
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+protected:
+    void run() override;
 
 private:
-    PluginTimer *m_timer = nullptr;
+    QString m_i2cPortName;
+    int m_i2cAddress;
+    bool m_available = false;
+    int m_fileDescriptor = -1;
 
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
+    // Thread stuff
+    QMutex m_stopMutex;
+    bool m_stop = false;
 
-private slots:
-    void onPluginTimer();
+    QMutex m_valueMutex;
+    double m_currentLux = 0;
+
+    // Init methods
+    bool setPower(bool power);
+    bool setTiming();
+
+public slots:
+    bool enable();
+    void disable();
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // TSL2561_H

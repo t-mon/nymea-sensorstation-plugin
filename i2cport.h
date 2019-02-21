@@ -20,40 +20,38 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINANALOGSENSORS_H
-#define DEVICEPLUGINANALOGSENSORS_H
+#ifndef I2CPORT_H
+#define I2CPORT_H
 
-#include "plugintimer.h"
-#include "devicemanager.h"
-#include "plugin/deviceplugin.h"
-#include "airqualitymonitor.h"
+#include <QObject>
 
-class DevicePluginAnalogSensors: public DevicePlugin
+class I2CPortPrivate;
+
+class I2CPort : public QObject
 {
     Q_OBJECT
-
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginanalogsensors.json")
-    Q_INTERFACES(DevicePlugin)
-
 public:
-    explicit DevicePluginAnalogSensors();
-    ~DevicePluginAnalogSensors() override;
+    explicit I2CPort(const QString &portName, QObject *parent = nullptr);
 
-    void init() override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    static QStringList availablePorts();
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    QList<int> scanRegirsters();
+
+    int deviceDescriptor() const;
+    int address() const;
+    QString portName() const;
+    QString portDeviceName() const;
+
+    bool isOpen() const;
+    bool isValid() const;
+
+public slots:
+    bool openPort(int i2cAddress = 0);
+    void closePort();
 
 private:
-    PluginTimer *m_timer = nullptr;
-
-    AirQualityMonitor *m_airQualityMonitor = nullptr;
-
-private slots:
-    void onPluginTimer();
+    I2CPortPrivate *d_ptr = nullptr;
 
 };
 
-#endif // DEVICEPLUGINANALOGSENSORS_H
+#endif // I2CPORT_H

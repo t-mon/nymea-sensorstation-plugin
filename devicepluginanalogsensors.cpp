@@ -21,43 +21,68 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "plugininfo.h"
+#include "types/param.h"
+#include "plugin/devicedescriptor.h"
 #include "devicepluginanalogsensors.h"
-
-#include "interintegratedcircuit.h"
 
 DevicePluginAnalogSensors::DevicePluginAnalogSensors()
 {
 
 }
 
-void DevicePluginAnalogSensors::init()
+DevicePluginAnalogSensors::~DevicePluginAnalogSensors()
 {
-    // Initialize/create objects
+    if (m_timer) {
+        hardwareManager()->pluginTimerManager()->unregisterTimer(m_timer);
+        m_timer = nullptr;
+    }
 }
 
-void DevicePluginAnalogSensors::startMonitoringAutoDevices()
+void DevicePluginAnalogSensors::init()
 {
-    // Start seaching for devices which can be discovered and added automatically
-    qCDebug(dcAnalogSensors()) << "i2c ports:" << InterIntegratedCircuit::availablePorts();
+
 }
 
 void DevicePluginAnalogSensors::postSetupDevice(Device *device)
 {
-    qCDebug(dcAnalogSensors()) << "Post setup device" << device->name() << device->params();
-
-    // This method will be called once the setup for device is finished
+    qCDebug(dcAnalogSensors()) << "Post setup device" << device->name();
+    if (m_airQualityMonitor) {
+        m_airQualityMonitor->enable();
+    }
 }
 
 void DevicePluginAnalogSensors::deviceRemoved(Device *device)
 {
-    qCDebug(dcAnalogSensors()) << "Remove device" << device->name() << device->params();
+    qCDebug(dcAnalogSensors()) << "Remove device" << device->name();
 
     // Clean up all data related to this device
+    if (device->deviceClassId() == airQualitySensorsDeviceClassId) {
+        if (m_airQualityMonitor) {
+            delete m_airQualityMonitor;
+            m_airQualityMonitor = nullptr;
+        }
+
+        if (m_timer) {
+            hardwareManager()->pluginTimerManager()->unregisterTimer(m_timer);
+            m_timer = nullptr;
+        }
+    }
 }
 
 DeviceManager::DeviceSetupStatus DevicePluginAnalogSensors::setupDevice(Device *device)
 {
-    qCDebug(dcAnalogSensors()) << "Setup device" << device->name() << device->params();
+    qCDebug(dcAnalogSensors()) << "Setup device" << device->name();
+
+    if (device->deviceClassId() == airQualitySensorsDeviceClassId) {
+        if (m_airQualityMonitor) {
+            qCWarning(dcAnalogSensors()) << "There is already an analogsensor set up. Only once sensor is allowed";
+            return DeviceManager::DeviceSetupStatusFailure;
+        }
+
+        m_airQualityMonitor = new AirQualityMonitor(device, this);
+        m_timer = hardwareManager()->pluginTimerManager()->registerTimer(600);
+        connect(m_timer, &PluginTimer::timeout, this, &DevicePluginAnalogSensors::onPluginTimer);
+    }
 
     return DeviceManager::DeviceSetupStatusSuccess;
 }
@@ -67,4 +92,11 @@ DeviceManager::DeviceError DevicePluginAnalogSensors::executeAction(Device *devi
     qCDebug(dcAnalogSensors()) << "Executing action for device" << device->name() << action.actionTypeId().toString() << action.params();
 
     return DeviceManager::DeviceErrorNoError;
+}
+
+void DevicePluginAnalogSensors::onPluginTimer()
+{
+    if (m_airQualityMonitor) {
+        m_airQualityMonitor->measure();
+    }
 }
