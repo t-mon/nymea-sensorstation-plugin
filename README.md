@@ -8,6 +8,10 @@ This [nymea](https://nymea.io) plugin contains the implementation of a DIY senso
 * pressure
 * air quality
 
+![SensorStation](https://github.com/t-mon/nymea-sensorstation-plugin/blob/master/docs/screenshots/sensorstation.jpg "Sensor station")
+
+![SensorStation schematics](https://github.com/t-mon/nymea-sensorstation-plugin/blob/master/docs/screenshots/Screenshot_20190222_111717.png "Sensor station schematics")
+
 
 ## Build the plugin
 
