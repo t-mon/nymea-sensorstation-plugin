@@ -46,6 +46,8 @@ public:
 
 private:
     Device *m_device = nullptr;
+    bool m_writeLogs = false;
+
     ADS1115 *m_adc = nullptr;
 
     MQ135 *m_airQualitySensor = nullptr;

@@ -48,7 +48,6 @@ public:
 
 private:
     PluginTimer *m_timer = nullptr;
-
     AirQualityMonitor *m_airQualityMonitor = nullptr;
 
 private slots:

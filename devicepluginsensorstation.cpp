@@ -80,7 +80,8 @@ DeviceManager::DeviceSetupStatus DevicePluginAnalogSensors::setupDevice(Device *
         }
 
         m_airQualityMonitor = new AirQualityMonitor(device, this);
-        m_timer = hardwareManager()->pluginTimerManager()->registerTimer(600);
+        // Refresh the data values every 5 min
+        m_timer = hardwareManager()->pluginTimerManager()->registerTimer(300);
         connect(m_timer, &PluginTimer::timeout, this, &DevicePluginAnalogSensors::onPluginTimer);
     }
 

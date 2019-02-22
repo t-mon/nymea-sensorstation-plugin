@@ -76,6 +76,7 @@ AirQualityMonitor::AirQualityMonitor(Device *device, QObject *parent) :
     // Create the MQ-135 class and enable the ADC reading
     m_airQualitySensor = new MQ135(this);
 
+    // Note: for debugging, if we want to log the sensordata for plotting and filter tests
     m_logfile = new QFile("/tmp/sensordata.log");
 }
 
@@ -108,7 +109,7 @@ void AirQualityMonitor::enable()
     m_device->setStateValue(sensorStationConnectedStateTypeId, true);
 
     // Open the logfile
-    if (!m_logfile->isOpen()) {
+    if (!m_logfile->isOpen() && m_writeLogs) {
         if (!m_logfile->open(QFile::WriteOnly  | QFile::Append)) {
             qCWarning(dcSensorStation()) << "Could not open logfile" << m_logfile->errorString();
         }
@@ -125,8 +126,6 @@ void AirQualityMonitor::disable()
 
     // Make device unavailable
     m_device->setStateValue(sensorStationConnectedStateTypeId, false);
-
-
 }
 
 void AirQualityMonitor::measure()
