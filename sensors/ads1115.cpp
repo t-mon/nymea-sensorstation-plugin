@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                 *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -77,26 +77,26 @@ int ADS1115::getChannelValue(ADS1115::Channel channel)
 
 void ADS1115::run()
 {
-    qCDebug(dcAnalogSensors()) << "ADS1115: initialize I2C port" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
+    qCDebug(dcSensorStation()) << "ADS1115: initialize I2C port" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
 
     QFile i2cFile("/dev/" + m_i2cPortName);
     if (!i2cFile.exists()) {
-        qCWarning(dcAnalogSensors()) << "ADS1115: The given I2C file descriptor does not exist:" << i2cFile.fileName();
+        qCWarning(dcSensorStation()) << "ADS1115: The given I2C file descriptor does not exist:" << i2cFile.fileName();
         return;
     }
 
     if (!i2cFile.open(QFile::ReadWrite)) {
-        qCWarning(dcAnalogSensors()) << "ADS1115: Could not open the given I2C file descriptor:" << i2cFile.fileName() << i2cFile.errorString();
+        qCWarning(dcSensorStation()) << "ADS1115: Could not open the given I2C file descriptor:" << i2cFile.fileName() << i2cFile.errorString();
         return;
     }
 
     int fileDescriptor = i2cFile.handle();
 
     // Continuouse reading of the ADC values
-    qCDebug(dcAnalogSensors()) << "ADS1115: start reading values..." << this << "Process PID:" << syscall(SYS_gettid);
+    qCDebug(dcSensorStation()) << "ADS1115: start reading values..." << this << "Process PID:" << syscall(SYS_gettid);
     while (true) {
         if (ioctl(fileDescriptor, I2C_SLAVE, m_i2cAddress) < 0) {
-            qCWarning(dcAnalogSensors()) << "ADS1115: Could not set I2C into slave mode" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
+            qCWarning(dcSensorStation()) << "ADS1115: Could not set I2C into slave mode" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
             msleep(500);
             continue;
         }
@@ -107,7 +107,7 @@ void ADS1115::run()
         m_channel3Value = readInputValue(fileDescriptor, Channel3);
         m_channel4Value = readInputValue(fileDescriptor, Channel4);
 
-        //qCDebug(dcAnalogSensors()) << "AI0:" << m_channel1Value << "| AI1" << m_channel2Value << "| AI2" << m_channel3Value << "| AI3" << m_channel4Value;
+        //qCDebug(dcSensorStation()) << "AI0:" << m_channel1Value << "| AI1" << m_channel2Value << "| AI2" << m_channel3Value << "| AI3" << m_channel4Value;
 
         QMutexLocker stopLocker(&m_stopMutex);
         if (m_stop) break;
@@ -115,7 +115,7 @@ void ADS1115::run()
     }
 
     i2cFile.close();
-    qCDebug(dcAnalogSensors()) << "ADS1115: Reading thread finished.";
+    qCDebug(dcSensorStation()) << "ADS1115: Reading thread finished.";
 }
 
 int ADS1115::readInputValue(int fd, ADS1115::Channel channel)
@@ -144,7 +144,7 @@ int ADS1115::readInputValue(int fd, ADS1115::Channel channel)
     unsigned char readBuf[2] = {0};
     do {
         if (read(fd, readBuf, 2) != 2) {
-            qCWarning(dcAnalogSensors()) << "ADS1115: could not read ADC data";
+            qCWarning(dcSensorStation()) << "ADS1115: could not read ADC data";
             return 0;
         }
     } while (!(readBuf[0] & 0x80));
@@ -152,13 +152,13 @@ int ADS1115::readInputValue(int fd, ADS1115::Channel channel)
     // Write conversion register
     readBuf[0] = 0;
     if (write(fd, readBuf, 1) != 1) {
-        qCWarning(dcAnalogSensors()) << "ADS1115: could not write select register";
+        qCWarning(dcSensorStation()) << "ADS1115: could not write select register";
         return 0;
     }
 
     // Read value data
     if (read(fd, readBuf, 2) != 2) {
-        qCWarning(dcAnalogSensors()) << "ADS1115: could not read ADC data";
+        qCWarning(dcSensorStation()) << "ADS1115: could not read ADC data";
         return 0;
     }
 
@@ -171,7 +171,7 @@ bool ADS1115::enable()
     // Check if this address can be opened
     I2CPort port(m_i2cPortName);
     if (!port.openPort(m_i2cAddress)) {
-        qCWarning(dcAnalogSensors()) << "ADS1115 is not available on port" << port.portDeviceName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
+        qCWarning(dcSensorStation()) << "ADS1115 is not available on port" << port.portDeviceName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
         return false;
     }
     port.closePort();
@@ -190,7 +190,7 @@ void ADS1115::disable()
     if (m_stop)
         return;
 
-    qCDebug(dcAnalogSensors()) << "ADS1115: Disable measurements";
+    qCDebug(dcSensorStation()) << "ADS1115: Disable measurements";
     m_stop = true;
 }
 

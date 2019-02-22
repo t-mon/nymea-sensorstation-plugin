@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                 *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -66,21 +66,21 @@ double BMP180::currentAltitudeValue()
 void BMP180::run()
 {
     QFile i2cFile("/dev/" + m_i2cPortName);
-    qCDebug(dcAnalogSensors()) << "BMP180: initialize I2C port" << i2cFile.fileName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
+    qCDebug(dcSensorStation()) << "BMP180: initialize I2C port" << i2cFile.fileName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
     if (!i2cFile.exists()) {
-        qCWarning(dcAnalogSensors()) << "BMP180: The given I2C file descriptor does not exist:" << i2cFile.fileName();
+        qCWarning(dcSensorStation()) << "BMP180: The given I2C file descriptor does not exist:" << i2cFile.fileName();
         return;
     }
 
     if (!i2cFile.open(QFile::ReadWrite)) {
-        qCWarning(dcAnalogSensors()) << "BMP180: Could not open the given I2C file descriptor:" << i2cFile.fileName() << i2cFile.errorString();
+        qCWarning(dcSensorStation()) << "BMP180: Could not open the given I2C file descriptor:" << i2cFile.fileName() << i2cFile.errorString();
         return;
     }
 
     int fileDescriptor = i2cFile.handle();
-    qCDebug(dcAnalogSensors()) << "BMP180: start reading calibration values...";
+    qCDebug(dcSensorStation()) << "BMP180: start reading calibration values...";
     if (ioctl(fileDescriptor, I2C_SLAVE, m_i2cAddress) < 0) {
-        qCWarning(dcAnalogSensors()) << "BMP180: Could not set I2C into slave mode" << i2cFile.fileName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
+        qCWarning(dcSensorStation()) << "BMP180: Could not set I2C into slave mode" << i2cFile.fileName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
         return;
     }
 
@@ -88,10 +88,10 @@ void BMP180::run()
     loadCalibrationData(fileDescriptor);
 
     // Continuouse reading of the ADC values
-    qCDebug(dcAnalogSensors()) << "BMP180: start measuring..." << this << "Process PID:" << syscall(SYS_gettid);
+    qCDebug(dcSensorStation()) << "BMP180: start measuring..." << this << "Process PID:" << syscall(SYS_gettid);
     while (true) {
         if (ioctl(fileDescriptor, I2C_SLAVE, m_i2cAddress) < 0) {
-            qCWarning(dcAnalogSensors()) << "BMP180: Could not set I2C into slave mode" << i2cFile.fileName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
+            qCWarning(dcSensorStation()) << "BMP180: Could not set I2C into slave mode" << i2cFile.fileName() << QString("0x%1").arg(m_i2cAddress, 0, 16);
             continue;
         }
 
@@ -106,7 +106,7 @@ void BMP180::run()
 
         // For debugging
         //double temperature = calculateTemperature(rawTemperature);
-        //qCDebug(dcAnalogSensors()) << "BMP180: Temperature" << temperature <<  "[°C] | Pressure" << pressure << "[Pa]" << pressureConverted << "[hPa ]" << altitude << "[m]";
+        //qCDebug(dcSensorStation()) << "BMP180: Temperature" << temperature <<  "[°C] | Pressure" << pressure << "[Pa]" << pressureConverted << "[hPa ]" << altitude << "[m]";
 
         QMutexLocker valueLocker(&m_valueMutex);
         m_altitude = altitude;
@@ -118,7 +118,7 @@ void BMP180::run()
     }
 
     i2cFile.close();
-    qCDebug(dcAnalogSensors()) << "BMP180: Reading thread finished.";
+    qCDebug(dcSensorStation()) << "BMP180: Reading thread finished.";
 }
 
 void BMP180::loadCalibrationData(int fileDescriptor)
@@ -136,17 +136,17 @@ void BMP180::loadCalibrationData(int fileDescriptor)
     m_calibrationMC = qToBigEndian(static_cast<qint16>(i2c_smbus_read_word_data(fileDescriptor, 0xBC)));
     m_calibrationMD = qToBigEndian(static_cast<qint16>(i2c_smbus_read_word_data(fileDescriptor, 0xBE)));
 
-    qCDebug(dcAnalogSensors()) << "BMP180: AC1" << m_calibrationAc1;
-    qCDebug(dcAnalogSensors()) << "BMP180: AC2" << m_calibrationAc2;
-    qCDebug(dcAnalogSensors()) << "BMP180: AC3" << m_calibrationAc3;
-    qCDebug(dcAnalogSensors()) << "BMP180: AC4" << m_calibrationAc4;
-    qCDebug(dcAnalogSensors()) << "BMP180: AC5" << m_calibrationAc5;
-    qCDebug(dcAnalogSensors()) << "BMP180: AC6" << m_calibrationAc6;
-    qCDebug(dcAnalogSensors()) << "BMP180: B1" << m_calibrationB1;
-    qCDebug(dcAnalogSensors()) << "BMP180: B2" << m_calibrationB2;
-    qCDebug(dcAnalogSensors()) << "BMP180: MB" << m_calibrationMB;
-    qCDebug(dcAnalogSensors()) << "BMP180: MC" << m_calibrationMC;
-    qCDebug(dcAnalogSensors()) << "BMP180: MD" << m_calibrationMD;
+    qCDebug(dcSensorStation()) << "BMP180: AC1" << m_calibrationAc1;
+    qCDebug(dcSensorStation()) << "BMP180: AC2" << m_calibrationAc2;
+    qCDebug(dcSensorStation()) << "BMP180: AC3" << m_calibrationAc3;
+    qCDebug(dcSensorStation()) << "BMP180: AC4" << m_calibrationAc4;
+    qCDebug(dcSensorStation()) << "BMP180: AC5" << m_calibrationAc5;
+    qCDebug(dcSensorStation()) << "BMP180: AC6" << m_calibrationAc6;
+    qCDebug(dcSensorStation()) << "BMP180: B1" << m_calibrationB1;
+    qCDebug(dcSensorStation()) << "BMP180: B2" << m_calibrationB2;
+    qCDebug(dcSensorStation()) << "BMP180: MB" << m_calibrationMB;
+    qCDebug(dcSensorStation()) << "BMP180: MC" << m_calibrationMC;
+    qCDebug(dcSensorStation()) << "BMP180: MD" << m_calibrationMD;
 #else
     Q_UNUSED(fileDescriptor)
 #endif // __arm__
@@ -156,14 +156,14 @@ bool BMP180::sendCommand(int fileDescriptor, quint8 command)
 {
 #ifdef __arm__
     if (ioctl(fileDescriptor, I2C_SLAVE, m_i2cAddress) < 0) {
-        qCWarning(dcAnalogSensors()) << "BMP180: Could not set I2C into slave mode" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
+        qCWarning(dcSensorStation()) << "BMP180: Could not set I2C into slave mode" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
         return false;
     }
 
     // Write command (0xF4)
     int length = i2c_smbus_write_byte_data(fileDescriptor, 0xF4, command);
     if (length < 0) {
-        qCWarning(dcAnalogSensors()) << "BMP180: Could not sent command" << QString("0x%1").arg(command, 0, 16) << "to I2C bus.";
+        qCWarning(dcSensorStation()) << "BMP180: Could not sent command" << QString("0x%1").arg(command, 0, 16) << "to I2C bus.";
         return false;
     }
     return true;
@@ -243,29 +243,29 @@ long BMP180::calculatePressure(long rawTemperature, long rawPressure)
     long x1 = (((rawTemperature) - m_calibrationAc6) * m_calibrationAc5) >> 15;
     long x2 = (m_calibrationMC << 11) / (x1 + m_calibrationMD);
     long b5 = x1 + x2;
-    //qCDebug(dcAnalogSensors()) << "   -> b5:" << b5;
+    //qCDebug(dcSensorStation()) << "   -> b5:" << b5;
 
     // Calculate B6
     long b6 = b5 - 4000;
-    //qCDebug(dcAnalogSensors()) << "   -> b6:" << b6;
+    //qCDebug(dcSensorStation()) << "   -> b6:" << b6;
 
     // Calculate B3
     x1 = (m_calibrationB2 * (b6 * b6) >> 12 ) >> 11;
     x2 = (m_calibrationAc2 * b6) >> 11;
     long x3 = x1 + x2;
     long b3 = (((m_calibrationAc1 * 4 + x3) << static_cast<quint8>(m_mode)) + 2) / 4;
-    //qCDebug(dcAnalogSensors()) << "   -> b3:" << b3;
+    //qCDebug(dcSensorStation()) << "   -> b3:" << b3;
 
     // Calculate B4
     x1 = (m_calibrationAc3 * b6) >> 13;
     x2 = (m_calibrationB1 * ((b6 * b6) >> 12)) >> 16;
     x3 = ((x1 + x2) +2) >> 2;
     long b4 = (m_calibrationAc4 * (x3 + 32768)) >> 15;
-    //qCDebug(dcAnalogSensors()) << "   -> b4:" << b4;
+    //qCDebug(dcSensorStation()) << "   -> b4:" << b4;
 
     // Calculate B7
     long b7 = (rawPressure - b3) * (50000 >> static_cast<long>(m_mode));
-    //qCDebug(dcAnalogSensors()) << "   -> b7:" << b7;
+    //qCDebug(dcSensorStation()) << "   -> b7:" << b7;
 
     // calculate compensated pressure
     long p = 0;
@@ -294,7 +294,7 @@ bool BMP180::enable()
     // Check if this address can be opened
     I2CPort port(m_i2cPortName);
     if (!port.openPort(m_i2cAddress)) {
-        qCWarning(dcAnalogSensors()) << "BMP180 is not available on port" << port.portDeviceName() << QString("0x%1").arg(m_i2cAddress, 0, 16);;
+        qCWarning(dcSensorStation()) << "BMP180 is not available on port" << port.portDeviceName() << QString("0x%1").arg(m_i2cAddress, 0, 16);;
         return false;
     }
     port.closePort();
@@ -313,7 +313,7 @@ void BMP180::disable()
     if (m_stop)
         return;
 
-    qCDebug(dcAnalogSensors()) << "BMP180: Disable measurements";
+    qCDebug(dcSensorStation()) << "BMP180: Disable measurements";
     m_stop = true;
 }
 

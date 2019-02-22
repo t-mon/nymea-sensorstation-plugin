@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                 *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -23,7 +23,7 @@
 #include "plugininfo.h"
 #include "types/param.h"
 #include "plugin/devicedescriptor.h"
-#include "devicepluginanalogsensors.h"
+#include "devicepluginsensorstation.h"
 
 DevicePluginAnalogSensors::DevicePluginAnalogSensors()
 {
@@ -45,7 +45,7 @@ void DevicePluginAnalogSensors::init()
 
 void DevicePluginAnalogSensors::postSetupDevice(Device *device)
 {
-    qCDebug(dcAnalogSensors()) << "Post setup device" << device->name();
+    qCDebug(dcSensorStation()) << "Post setup device" << device->name();
     if (m_airQualityMonitor) {
         m_airQualityMonitor->enable();
     }
@@ -53,10 +53,10 @@ void DevicePluginAnalogSensors::postSetupDevice(Device *device)
 
 void DevicePluginAnalogSensors::deviceRemoved(Device *device)
 {
-    qCDebug(dcAnalogSensors()) << "Remove device" << device->name();
+    qCDebug(dcSensorStation()) << "Remove device" << device->name();
 
     // Clean up all data related to this device
-    if (device->deviceClassId() == airQualitySensorsDeviceClassId) {
+    if (device->deviceClassId() == sensorStationDeviceClassId) {
         if (m_airQualityMonitor) {
             delete m_airQualityMonitor;
             m_airQualityMonitor = nullptr;
@@ -71,11 +71,11 @@ void DevicePluginAnalogSensors::deviceRemoved(Device *device)
 
 DeviceManager::DeviceSetupStatus DevicePluginAnalogSensors::setupDevice(Device *device)
 {
-    qCDebug(dcAnalogSensors()) << "Setup device" << device->name();
+    qCDebug(dcSensorStation()) << "Setup device" << device->name();
 
-    if (device->deviceClassId() == airQualitySensorsDeviceClassId) {
+    if (device->deviceClassId() == sensorStationDeviceClassId) {
         if (m_airQualityMonitor) {
-            qCWarning(dcAnalogSensors()) << "There is already an analogsensor set up. Only once sensor is allowed";
+            qCWarning(dcSensorStation()) << "There is already an sensorstation set up. Only once sensor is allowed";
             return DeviceManager::DeviceSetupStatusFailure;
         }
 
@@ -89,7 +89,7 @@ DeviceManager::DeviceSetupStatus DevicePluginAnalogSensors::setupDevice(Device *
 
 DeviceManager::DeviceError DevicePluginAnalogSensors::executeAction(Device *device, const Action &action)
 {
-    qCDebug(dcAnalogSensors()) << "Executing action for device" << device->name() << action.actionTypeId().toString() << action.params();
+    qCDebug(dcSensorStation()) << "Executing action for device" << device->name() << action.actionTypeId().toString() << action.params();
 
     return DeviceManager::DeviceErrorNoError;
 }

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                 *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -64,16 +64,16 @@ double SHT30::currentHumidityValue()
 
 void SHT30::run()
 {
-    qCDebug(dcAnalogSensors()) << "SHT30: initialize I2C port" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
+    qCDebug(dcSensorStation()) << "SHT30: initialize I2C port" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
 
     QFile i2cFile("/dev/" + m_i2cPortName);
     if (!i2cFile.exists()) {
-        qCWarning(dcAnalogSensors()) << "SHT30: The given I2C file descriptor does not exist:" << i2cFile.fileName();
+        qCWarning(dcSensorStation()) << "SHT30: The given I2C file descriptor does not exist:" << i2cFile.fileName();
         return;
     }
 
     if (!i2cFile.open(QFile::ReadWrite)) {
-        qCWarning(dcAnalogSensors()) << "SHT30: Could not open the given I2C file descriptor:" << i2cFile.fileName() << i2cFile.errorString();
+        qCWarning(dcSensorStation()) << "SHT30: Could not open the given I2C file descriptor:" << i2cFile.fileName() << i2cFile.errorString();
         return;
     }
 
@@ -90,13 +90,13 @@ void SHT30::run()
 
 
     // Continuouse reading of the ADC values
-    qCDebug(dcAnalogSensors()) << "SHT30: start reading value thread..." << this << "Process PID:" << syscall(SYS_gettid);
+    qCDebug(dcSensorStation()) << "SHT30: start reading value thread..." << this << "Process PID:" << syscall(SYS_gettid);
     while (true) {
         if (ioctl(fileDescriptor, I2C_SLAVE, m_i2cAddress) < 0) {
-            qCWarning(dcAnalogSensors()) << "SHT30: Could not set I2C into slave mode" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
+            qCWarning(dcSensorStation()) << "SHT30: Could not set I2C into slave mode" << m_i2cPortName << QString("0x%1").arg(m_i2cAddress, 0, 16);
             continue;
         }
-        //qCDebug(dcAnalogSensors()) << "SHT30: set I2C address" << QString("0x%1").arg(m_i2cAddress, 0, 16);
+        //qCDebug(dcSensorStation()) << "SHT30: set I2C address" << QString("0x%1").arg(m_i2cAddress, 0, 16);
 
         // Send measurement command: 0x2C
         // High repeatability measurement: 0x06
@@ -104,7 +104,7 @@ void SHT30::run()
         config[0] = 0x2C;
         config[1] = 0x06;
         if (write(fileDescriptor, config, 2) != 2) {
-            qCWarning(dcAnalogSensors()) << "SHT30: could not configure sensor.";
+            qCWarning(dcSensorStation()) << "SHT30: could not configure sensor.";
             msleep(500);
             continue;
         }
@@ -114,7 +114,7 @@ void SHT30::run()
         // Temperature msb, Temperature lsb, Temperature CRC, Humididty msb, Humidity lsb, Humidity CRC
         char data[6] = {0};
         if (read(fileDescriptor, data, 6) != 6) {
-            qCWarning(dcAnalogSensors()) << "SHT30: could not read sensor values.";
+            qCWarning(dcSensorStation()) << "SHT30: could not read sensor values.";
             msleep(500);
             continue;
         }
@@ -127,7 +127,7 @@ void SHT30::run()
         QMutexLocker valueLocker(&m_valueMutex);
         m_temperature = temperatureFilter.filterValue(temperature);
         m_humidity = humidityFilter.filterValue(humidity);
-        //qCDebug(dcAnalogSensors()) << "Temperature" << m_temperature << "°C | humidity" << m_humidity << "%";
+        //qCDebug(dcSensorStation()) << "Temperature" << m_temperature << "°C | humidity" << m_humidity << "%";
 
         QMutexLocker stopLocker(&m_stopMutex);
         if (m_stop) break;
@@ -135,7 +135,7 @@ void SHT30::run()
     }
 
     i2cFile.close();
-    qCDebug(dcAnalogSensors()) << "SHT30: Reading thread finished.";
+    qCDebug(dcSensorStation()) << "SHT30: Reading thread finished.";
 }
 
 bool SHT30::enable()
@@ -143,7 +143,7 @@ bool SHT30::enable()
     // Check if this address can be opened
     I2CPort port(m_i2cPortName);
     if (!port.openPort(m_i2cAddress)) {
-        qCWarning(dcAnalogSensors()) << "SHT30 is not available on port" << port.portDeviceName() << QString("0x%1").arg(m_i2cAddress, 0, 16);;
+        qCWarning(dcSensorStation()) << "SHT30 is not available on port" << port.portDeviceName() << QString("0x%1").arg(m_i2cAddress, 0, 16);;
         return false;
     }
     port.closePort();
@@ -162,6 +162,6 @@ void SHT30::disable()
     if (m_stop)
         return;
 
-    qCDebug(dcAnalogSensors()) << "SHT30: Disable measurements";
+    qCDebug(dcSensorStation()) << "SHT30: Disable measurements";
     m_stop = true;
 }

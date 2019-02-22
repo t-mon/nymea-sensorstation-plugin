@@ -1,10 +1,4 @@
-nymea-plugin-analogsensors (0.0.1+201803112139~220c638~xenial) UNRELEASED; urgency=medium
-
-  * New Package build
-
- --  <timon@nymea-plugin-analogsensors-nymea-builder-xenial-amd64-armhf.lxd>  Sun, 11 Mar 2018 20:39:38 +0000
-
-nymea-plugin-analogsensors (0.0.1) xenial; urgency=medium
+nymea-plugin-sensorstation (0.0.1) xenial; urgency=medium
 
   * Initial release.
 

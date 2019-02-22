@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                 *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -105,12 +105,12 @@ void AirQualityMonitor::enable()
     m_lightSensor->enable();
 
     // Make device available
-    m_device->setStateValue(airQualitySensorsConnectedStateTypeId, true);
+    m_device->setStateValue(sensorStationConnectedStateTypeId, true);
 
     // Open the logfile
     if (!m_logfile->isOpen()) {
         if (!m_logfile->open(QFile::WriteOnly  | QFile::Append)) {
-            qCWarning(dcAnalogSensors()) << "Could not open logfile" << m_logfile->errorString();
+            qCWarning(dcSensorStation()) << "Could not open logfile" << m_logfile->errorString();
         }
     }
 }
@@ -124,7 +124,7 @@ void AirQualityMonitor::disable()
     m_lightSensor->disable();
 
     // Make device unavailable
-    m_device->setStateValue(airQualitySensorsConnectedStateTypeId, false);
+    m_device->setStateValue(sensorStationConnectedStateTypeId, false);
 
 
 }
@@ -153,16 +153,16 @@ void AirQualityMonitor::measure()
     double currentPpm = m_airQualitySensor->calculatePpmValue();
     double currentPpmFiltered = m_airQualityFilter->filterValue(currentPpm);
 
-    qCDebug(dcAnalogSensors()) << "Air quality value" << m_adc->getChannelValue(ADS1115::Channel1) << m_airQualitySensor->getCalibrationRestistance() << "Ohm" << m_adc->getChannelVoltage(ADS1115::Channel1) << "V" << currentPpm << "ppm";
-    qCDebug(dcAnalogSensors()) << "Temperature" << currentTemperature << "[°C]" << "| Humidity" << currentHumidity << "[%]";
-    qCDebug(dcAnalogSensors()) << "Pressure" << currentPressure << "[hPa]";
-    qCDebug(dcAnalogSensors()) << "Light intensity" << currentLux << "[lux]";
+    qCDebug(dcSensorStation()) << "Air quality value" << m_adc->getChannelValue(ADS1115::Channel1) << m_airQualitySensor->getCalibrationRestistance() << "Ohm" << m_adc->getChannelVoltage(ADS1115::Channel1) << "V" << currentPpm << "ppm";
+    qCDebug(dcSensorStation()) << "Temperature" << currentTemperature << "[°C]" << "| Humidity" << currentHumidity << "[%]";
+    qCDebug(dcSensorStation()) << "Pressure" << currentPressure << "[hPa]";
+    qCDebug(dcSensorStation()) << "Light intensity" << currentLux << "[lux]";
 
-    m_device->setStateValue(airQualitySensorsCo2StateTypeId, roundValue(currentPpmFiltered));
-    m_device->setStateValue(airQualitySensorsTemperatureStateTypeId, roundValue(currentTemperatureFiltered));
-    m_device->setStateValue(airQualitySensorsHumidityStateTypeId, roundValue(currentHumidityFiltered));
-    m_device->setStateValue(airQualitySensorsPressureStateTypeId, roundValue(currentPressureFiltered));
-    m_device->setStateValue(airQualitySensorsLightIntensityStateTypeId, roundValue(currentLuxFiltered));
+    m_device->setStateValue(sensorStationCo2StateTypeId, roundValue(currentPpmFiltered));
+    m_device->setStateValue(sensorStationTemperatureStateTypeId, roundValue(currentTemperatureFiltered));
+    m_device->setStateValue(sensorStationHumidityStateTypeId, roundValue(currentHumidityFiltered));
+    m_device->setStateValue(sensorStationPressureStateTypeId, roundValue(currentPressureFiltered));
+    m_device->setStateValue(sensorStationLightIntensityStateTypeId, roundValue(currentLuxFiltered));
 
     // Write logfile for filter verification
     if (m_logfile->isOpen()) {
