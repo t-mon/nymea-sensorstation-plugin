@@ -32,7 +32,7 @@ class DevicePluginAnalogSensors: public DevicePlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginsensorstations.json")
+    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginsensorstation.json")
     Q_INTERFACES(DevicePlugin)
 
 public:
